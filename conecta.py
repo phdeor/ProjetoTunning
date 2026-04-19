@@ -4,13 +4,15 @@ from pymongo import MongoClient
 
 def conectar_postgres():
     try:
-        return psycopg2.connect(
+        p = psycopg2.connect(
             host="localhost",
-            database="supermercado_db",
+            database="postgres",
             user="postgres",
-            password="sua_senha_aqui",
-            port="5432"
+            password="fei",
+            port="5433" #porta normal 5432 porta souza 5433
         )
+        print ("Conectado ao Postgre!")
+        return p
     except Exception as e:
         print(f"Erro no Postgres: {e}")
         return None
