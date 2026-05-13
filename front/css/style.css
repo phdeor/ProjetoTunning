@@ -1,0 +1,300 @@
+/* =========================================================
+   ESTILO TUNNING STORE - DASHBOARD MODERNO E CLEAN
+   ========================================================= */
+
+/* ── Reset e Base ── */
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: #f1f5f9 !important; /* Cinza bem clarinho moderno */
+  color: #334155;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar (Menu Lateral Escuro) ── */
+.sidebar {
+  width: 250px;
+  background-color: #1e293b; /* Azul ardósia escuro */
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.sidebar-brand {
+  padding: 20px;
+  border-bottom: 1px solid #334155;
+  text-align: center;
+}
+
+.sidebar-brand h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #38bdf8; /* Azul claro de destaque */
+  letter-spacing: 1px;
+}
+
+nav {
+  flex: 1;
+  padding: 15px 0;
+}
+
+nav a {
+  display: block;
+  padding: 12px 25px;
+  color: #cbd5e1;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+nav a:hover {
+  background-color: #334155;
+  color: #ffffff;
+}
+
+nav a.active {
+  background-color: #0f172a;
+  color: #38bdf8;
+  border-left: 4px solid #38bdf8;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  font-size: 12px;
+  color: #64748b;
+  border-top: 1px solid #334155;
+}
+
+/* ── Main & Topbar ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.topbar {
+  background-color: #ffffff !important;
+  padding: 15px 30px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.topbar h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.content {
+  padding: 30px;
+}
+
+/* ── Tabelas ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-top: 15px;
+}
+
+table, th, td {
+  border: none !important; /* Removendo as bordas feias */
+}
+
+th {
+  background-color: #f8fafc;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+td {
+  padding: 15px;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #334155;
+}
+
+tr:hover td {
+  background-color: #f1f5f9;
+}
+
+/* ── Botões ── */
+.btn {
+  padding: 8px 16px;
+  border: none !important;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+.btn:hover {
+  background-color: #cbd5e1;
+}
+
+.btn-primary {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8 !important;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+}
+
+.btn-danger {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626 !important;
+}
+
+/* ── Modais ── */
+.modal {
+  display: none;
+  position: fixed;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%);
+  width: 400px !important;
+  background: #ffffff !important;
+  padding: 30px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  z-index: 1000;
+}
+
+.modal.open {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 6px;
+  color: #475569;
+}
+
+.form-group input, .form-group select {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.form-actions {
+  margin-top: 25px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ── Caixa de Login e Cadastro ── */
+.login-box {
+  width: 400px !important;
+  margin: 12vh auto !important;
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 40px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.login-box h2 {
+  margin-top: 0;
+  color: #0f172a;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+/* ── Toast (Mensagens de Sucesso/Erro) ── */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  top: auto !important;
+  z-index: 9999;
+}
+
+.toast {
+  background: #10b981;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: none !important;
+  animation: slideIn 0.3s ease forwards;
+}
+
+.toast-erro {
+  background: #b91010;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: none !important;
+  animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Neutralizando algumas bordas brutas inseridas no HTML da Loja/Dashboard ── */
+div[style*="border: 2px solid #000"], 
+div[style*="border: 3px solid #000"] {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+hr[style*="border: 1px solid #000"] {
+  border: none !important;
+  border-top: 1px solid #e2e8f0 !important;
+}

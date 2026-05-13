@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>TunningStore — Usuários</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand"><h1>⚡ Tunning</h1></div>
+  <nav>
+    <a href="dashboard.html">◈ Dashboard</a>
+    <a href="usuarios.html" class="active">👤 Usuários</a>
+    <a href="produtos.html">📦 Produtos</a>
+    <a href="categorias.html">🏷 Categorias</a>
+    <a href="redis.html">🗄 Monitor Redis</a>
+    <a href="mongo.html">📁 Arq. MongoDB</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Gerenciamento de Usuários</h2>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-primary" onclick="abrirNovo()">+ Novo</button>
+      <button class="btn btn-danger" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Nome</th><th>E-mail</th><th>Tipo</th><th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-usuarios"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal" id="modal-usuario">
+  <h3 id="modal-titulo">Usuário</h3>
+  <form id="form-usuario" onsubmit="salvarUsuario(event)">
+    <input type="hidden" id="u-id" />
+    <div class="form-group"><label>Nome:</label><input type="text" id="u-nome" required/></div>
+    <div class="form-group"><label>E-mail:</label><input type="email" id="u-email" required/></div>
+    <div class="form-group"><label>Senha (Só preencha se for novo):</label><input type="password" id="u-senha"/></div>
+    <div class="form-group">
+      <label>Tipo:</label>
+      <select id="u-adm">
+        <option value="false">Comum</option>
+        <option value="true">Admin</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn" onclick="closeModal('modal-usuario')">Fechar</button>
+      <button type="submit" class="btn btn-primary">Gravar</button>
+    </div>
+  </form>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  async function carregar() {
+    const lista = await Usuarios.listar();
+    document.getElementById('tabela-usuarios').innerHTML = lista.map(u => `
+      <tr>
+        <td>${u.id_usuario}</td><td>${u.nome}</td><td>${u.email}</td><td>${u.adm ? 'ADMIN' : 'USER'}</td>
+        <td>
+          <button class="btn" onclick="abrirEdicao(${u.id_usuario}, '${u.nome}', '${u.email}', ${u.adm})">Editar</button>
+          <button class="btn btn-danger" onclick="excluir(${u.id_usuario})">Remover</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function abrirNovo() {
+    document.getElementById('form-usuario').reset();
+    document.getElementById('u-id').value = '';
+    document.getElementById('modal-titulo').textContent = 'Novo Usuário';
+    openModal('modal-usuario');
+  }
+
+  function abrirEdicao(id, nome, email, adm) {
+    document.getElementById('u-id').value = id;
+    document.getElementById('u-nome').value = nome;
+    document.getElementById('u-email').value = email;
+    document.getElementById('u-adm').value = adm.toString();
+    document.getElementById('modal-titulo').textContent = 'Editar Usuário';
+    openModal('modal-usuario');
+  }
+
+  async function salvarUsuario(e) {
+    e.preventDefault();
+    const id = document.getElementById('u-id').value;
+    const dados = {
+      nome: document.getElementById('u-nome').value,
+      email: document.getElementById('u-email').value,
+      adm: document.getElementById('u-adm').value === 'true'
+    };
+    
+    // Se digitou senha, atualiza a senha também
+    const senha = document.getElementById('u-senha').value;
+    if(senha) dados.senha = senha;
+
+    if (id) {
+      await Usuarios.editar(id, dados);
+    } else {
+      await Usuarios.criar(dados);
+    }
+    closeModal('modal-usuario');
+    carregar();
+  }
+
+  async function excluir(id) {
+    if(confirm('Deseja excluir?')) { await Usuarios.excluir(id); carregar(); }
+  }
+  carregar();
+</script>
+</body>
+</html>

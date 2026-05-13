@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TunningStore — Loja</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      /* Estilos extras específicos para deixar a loja bonitona */
+      .store-header {
+        background-color: #1e293b; /* Azul escuro igual a sidebar do admin */
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #f8fafc;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      .store-header h1 {
+        margin: 0;
+        font-size: 22px;
+        color: #38bdf8;
+        letter-spacing: 1px;
+      }
+      .card {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      .product-card {
+        width: 240px;
+        text-align: center;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+        display: flex;
+        flex-direction: column;
+      }
+      .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+      .badge-cat {
+        font-size: 11px;
+        color: #475569;
+        background: #f1f5f9;
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid #cbd5e1;
+        display: inline-block;
+        margin-bottom: 12px;
+      }
+      .price {
+        font-size: 24px;
+        font-weight: 700;
+        color: #10b981; /* Verde moderno */
+        margin: 10px 0 5px 0;
+      }
+    </style>
+  </head>
+  <body
+    style="
+      display: flex;
+      flex-direction: column;
+      background-color: #f1f5f9;
+      margin: 0;
+      min-height: 100vh;
+    "
+  >
+    <header class="store-header">
+      <h1>⚡ TunningStore Vitrine</h1>
+      <button
+        class="btn"
+        style="background-color: #334155; color: white"
+        onclick="fazerLogout()"
+      >
+        Sair da Conta
+      </button>
+    </header>
+
+    <main
+      style="
+        display: flex;
+        flex: 1;
+        padding: 30px;
+        gap: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+      "
+    >
+      <section style="flex: 3">
+        <h2 style="margin-top: 0; color: #0f172a; font-size: 24px">
+          Produtos Disponíveis
+        </h2>
+        <hr
+          style="
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+          "
+        />
+
+        <div
+          id="vitrine"
+          style="display: flex; gap: 20px; flex-wrap: wrap"
+        ></div>
+      </section>
+
+      <aside
+        class="card"
+        style="
+          flex: 1;
+          min-width: 320px;
+          height: fit-content;
+          position: sticky;
+          top: 30px;
+        "
+      >
+        <h2
+          style="
+            margin-top: 0;
+            text-align: center;
+            color: #0f172a;
+            font-size: 20px;
+          "
+        >
+          🛒 Meu Carrinho
+        </h2>
+        <hr
+          style="
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+          "
+        />
+
+        <div
+          id="itens-carrinho"
+          style="
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            min-height: 180px;
+            margin-bottom: 20px;
+          "
+        >
+          <p
+            style="
+              color: #64748b;
+              font-size: 14px;
+              text-align: center;
+              margin-top: 60px;
+            "
+          >
+            O carrinho está vazio.
+          </p>
+        </div>
+
+        <div
+          style="
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: right;
+            color: #0f172a;
+          "
+        >
+          Total:
+          <span style="font-weight: bold; color: #10b981"
+            >R$ <span id="total-carrinho">0.00</span></span
+          >
+        </div>
+
+        <button
+          class="btn btn-primary"
+          style="
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 10px;
+          "
+          onclick="finalizarCompra()"
+        >
+          💲 Finalizar Pagamento
+        </button>
+        <button
+          class="btn"
+          style="
+            width: 100%;
+            background: transparent;
+            border: 1px solid #ef4444 !important;
+            color: #ef4444;
+          "
+          onclick="limparCarrinho()"
+        >
+          🗑 Limpar Carrinho
+        </button>
+      </aside>
+    </main>
+
+    <script src="../js/api.js"></script>
+    <script>
+      const idUsuario = localStorage.getItem("userId");
+      const produtosCadastrados = [];
+
+      if (!idUsuario) {
+        alert("Usuário não autenticado. Redirecionando para login.");
+        window.location.href = "login.html";
+      }
+
+      async function carregarLoja() {
+        const produtos = await Produtos.listar();
+        const categorias = await Categorias.listar();
+        const vitrine = document.getElementById("vitrine");
+
+        if (produtos.length === 0) {
+          vitrine.innerHTML =
+            '<p style="color: #64748b;">Nenhum produto cadastrado na loja no momento.</p>';
+          return;
+        }
+
+        produtosCadastrados.push(...produtos);
+
+        vitrine.innerHTML = produtos
+          .map((p) => {
+            const cat = categorias.find(
+              (c) => c.id_categoria == p.id_categoria,
+            );
+            const nomeCat = cat ? cat.nome : "Geral";
+            const semEstoque = p.estoque <= 0;
+
+            // Estilo do botão dependendo do estoque
+            const botaoHtml = semEstoque
+              ? `<button class="btn" style="width: 100%; cursor: not-allowed; opacity: 0.6;" disabled>Esgotado</button>`
+              : `<button class="btn btn-primary" style="width: 100%;" onclick="adicionarAoCarrinho(${p.id_produto}, '${p.nome}', ${p.preco}, ${p.estoque})">Adicionar</button>`;
+
+            return `
+                <div class="card product-card" style="${semEstoque ? "opacity: 0.65;" : ""}">
+                  <div style="font-size: 48px; margin-bottom: 15px;">
+                    ${p.mongo_image_ids ? `<img src="http://localhost:8000/api/produtos/${p.id_produto}/imagem/${p.mongo_image_ids}" alt="${p.nome}" style="max-width: 100%; max-height: 80px; object-fit: contain;">` : "📦"}
+                  </div>
+                  <h3 style="font-size: 16px; margin: 0 0 10px 0; color: #334155;">${p.nome}</h3>
+                  <div><span class="badge-cat">${nomeCat}</span></div>
+                  <div class="price">R$ ${parseFloat(p.preco).toFixed(2)}</div>
+                  <p style="font-size: 12px; margin-bottom: 20px; color: #64748b;">Estoque atual: <b style="color: #334155;">${p.estoque} un</b></p>
+                  <div style="margin-top: auto;">${botaoHtml}</div>
+                </div>
+              `;
+          })
+          .join("");
+
+        carregarCarrinho();
+      }
+
+      async function adicionarAoCarrinho(id, nome, preco, estoqueMax) {
+        try {
+          await Carrinho.adicionar(idUsuario, {
+            id_produto: id,
+            quantidade: 1,
+          });
+
+          await carregarCarrinho();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function removerDoCarrinho(idProduto) {
+        try {
+          await Carrinho.remover(idUsuario, idProduto);
+
+          await carregarCarrinho();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function carregarCarrinho() {
+        try {
+          const carrinho = await Carrinho.listar(idUsuario);
+
+          const divItens = document.getElementById("itens-carrinho");
+          const spanTotal = document.getElementById("total-carrinho");
+
+          if (!carrinho || carrinho.length === 0) {
+            divItens.innerHTML = `
+              <p style="color: #64748b; font-size: 14px; text-align: center; margin-top: 60px;">
+                O carrinho está vazio.
+              </p>
+            `;
+
+            spanTotal.textContent = "0.00";
+            return;
+          }
+
+          let total = 0;
+
+          // Transformamos as chaves do objeto carrinho em um array para iterar
+          divItens.innerHTML = Object.keys(carrinho)
+            .map((id) => {
+              // 1. Encontrar os detalhes do produto na sua lista geral usando o ID
+              const produto = produtosCadastrados.find(
+                (p) => p.id_produto == id,
+              );
+
+              // Se por algum motivo o produto não for encontrado, retornamos vazio
+              if (!produto) return "";
+
+              const quantidade = carrinho[id];
+              const subtotal = produto.preco * quantidade;
+              total += subtotal;
+
+              return `
+      <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
+        <div style="font-weight: 600; color: #334155; font-size: 14px;">
+          ${produto.nome}
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+          <span style="color: #64748b; font-size: 13px;">
+            ${quantidade}x R$ ${parseFloat(produto.preco).toFixed(2)}
+          </span>
+          <button
+            class="btn btn-danger"
+            style="padding: 4px 8px; font-size: 11px; border-radius: 4px;"
+            onclick="removerDoCarrinho(${produto.id_produto})"
+          >
+            X
+          </button>
+        </div>
+      </div>
+    `;
+            })
+            .join("");
+
+          // Não esqueça de atualizar o elemento do Total no HTML após o loop
+          // document.getElementById("valor-total").innerText =
+          //  `R$ ${total.toFixed(2)}`;
+          spanTotal.textContent = total.toFixed(2);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function atualizarCarrinho() {
+        const divItens = document.getElementById("itens-carrinho");
+        const spanTotal = document.getElementById("total-carrinho");
+
+        if (carrinho.length === 0) {
+          divItens.innerHTML =
+            '<p style="color: #64748b; font-size: 14px; text-align: center; margin-top: 60px;">O carrinho está vazio.</p>';
+          spanTotal.textContent = "0.00";
+          return;
+        }
+
+        let total = 0;
+        divItens.innerHTML = carrinho
+          .map((item) => {
+            const subtotal = item.preco * item.qtd;
+            total += subtotal;
+            return `
+                <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
+                  <div style="font-weight: 600; color: #334155; font-size: 14px;">${item.nome}</div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                    <span style="color: #64748b; font-size: 13px;">${item.qtd}x R$ ${item.preco.toFixed(2)}</span>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px; border-radius: 4px;" onclick="removerDoCarrinho(${item.id})">X</button>
+                  </div>
+                </div>
+              `;
+          })
+          .join("");
+
+        spanTotal.textContent = total.toFixed(2);
+      }
+
+      async function finalizarCompra() {
+        try {
+          await Carrinho.finalizar(idUsuario);
+          alert("Compra finalizada com sucesso!");
+        } catch (err) {
+          console.error(err);
+          alert("Erro ao finalizar compra. Tente novamente.");
+        }
+        carregarLoja();
+        await limparCarrinho();
+      }
+
+      async function limparCarrinho() {
+        try {
+          await Carrinho.limpar(idUsuario);
+        } catch (err) {
+          console.error(err);
+        }
+
+        carregarCarrinho();
+      }
+
+      carregarLoja();
+    </script>
+  </body>
+</html>

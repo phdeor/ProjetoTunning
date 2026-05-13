@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>TunningStore — Monitor Redis</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand"><h1>⚡ Tunning</h1></div>
+  <nav>
+    <a href="dashboard.html">◈ Dashboard</a>
+    <a href="usuarios.html">👤 Usuários</a>
+    <a href="produtos.html">📦 Produtos</a>
+    <a href="categorias.html">🏷 Categorias</a>
+    <a href="redis.html" class="active">🗄 Monitor Redis</a>
+    <a href="mongo.html">📁 Arq. MongoDB</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Monitoramento de Cache (Redis)</h2>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-danger" onclick="limparRedis()">Limpar Cache (FLUSHALL)</button>
+      <button class="btn" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <p style="background: #ffffcc; padding: 10px; border: 1px solid #000; font-weight: bold;">
+      Visualização em tempo real das sessões de carrinho ativas na memória RAM.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Chave (Key)</th><th>Tempo de Vida (TTL)</th><th>Dados em JSON (Value)</th></tr>
+      </thead>
+      <tbody id="tabela-redis"></tbody>
+    </table>
+  </div>
+</main>
+
+<script src="../js/api.js"></script>
+<script>
+  async function carregarRedis() {
+    const lista = await RedisAPI.listar();
+    document.getElementById('tabela-redis').innerHTML = lista.map(r => `
+      <tr>
+        <td style="font-family: monospace; font-weight: bold; color: darkred;">${r.chave}</td>
+        <td>${r.ttl}</td>
+        <td style="font-family: monospace;">${r.dados}</td>
+      </tr>
+    `).join('');
+  }
+
+  async function limparRedis() {
+    if(confirm('CUIDADO! Isso vai apagar o carrinho de todos os usuários. Continuar?')) {
+      await RedisAPI.limparCache();
+      document.getElementById('tabela-redis').innerHTML = '<tr><td colspan="3">Cache Vazio.</td></tr>';
+    }
+  }
+  carregarRedis();
+</script>
+</body>
+</html>

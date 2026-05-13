@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sistema Tunning - Cadastro</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body style="display: block; background-color: #008080;">
+
+  <div class="login-box" style="width: 350px;">
+    <h2>Novo Cadastro</h2>
+    <form id="form-cadastro" onsubmit="fazerCadastro(event)">
+      <div class="form-group" style="text-align: left;">
+        <label>Nome Completo:</label>
+        <input type="text" id="cad-nome" required placeholder="Ex: Gustavo" />
+      </div>
+      <div class="form-group" style="text-align: left;">
+        <label>E-mail:</label>
+        <input type="email" id="cad-email" required placeholder="email@exemplo.com" />
+      </div>
+      <div class="form-group" style="text-align: left;">
+        <label>Telefone:</label>
+        <input type="text" id="cad-telefone" placeholder="(11) 99999-9999" />
+      </div>
+      <div class="form-group" style="text-align: left;">
+        <label>Senha:</label>
+        <input type="password" id="cad-senha" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 10px;">Salvar Cadastro</button>
+      <hr style="margin: 15px 0;">
+      <button type="button" class="btn" style="width: 100%;" onclick="window.location.href='index.html'">Voltar para o Login</button>
+    </form>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    async function fazerCadastro(e) {
+      e.preventDefault();
+      
+      const dados = {
+        nome: document.getElementById('cad-nome').value,
+        email: document.getElementById('cad-email').value,
+        telefone: document.getElementById('cad-telefone').value,
+        senha: document.getElementById('cad-senha').value,
+        adm: false // Por padrão, quem se cadastra por aqui é usuário comum
+      };
+
+      // Chama a nossa API mocada para salvar o usuário
+      await Usuarios.criar(dados);
+      
+      alert('Cadastro realizado com sucesso! Faça login para acessar o sistema.');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

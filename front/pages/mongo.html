@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>TunningStore — MongoDB</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand"><h1>⚡ Tunning</h1></div>
+  <nav>
+    <a href="dashboard.html">◈ Dashboard</a>
+    <a href="usuarios.html">👤 Usuários</a>
+    <a href="produtos.html">📦 Produtos</a>
+    <a href="categorias.html">🏷 Categorias</a>
+    <a href="redis.html">🗄 Monitor Redis</a>
+    <a href="mongo.html" class="active">📁 Arq. MongoDB</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Gerenciador de Arquivos (MongoDB GridFS)</h2>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-primary" onclick="openModal('modal-upload')">+ Fazer Upload</button>
+      <button class="btn btn-danger" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <table>
+      <thead>
+        <tr><th>Object ID</th><th>Nome do Arquivo</th><th>Tamanho</th><th>Data</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="tabela-mongo"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal" id="modal-upload">
+  <h3>Upload de Arquivo (MongoDB)</h3>
+  <form id="form-upload" onsubmit="salvarArquivo(event)">
+    <div class="form-group">
+      <label>Selecione o Arquivo:</label>
+      <input type="file" id="m-file" required style="border: none;"/>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn" onclick="closeModal('modal-upload')">Cancelar</button>
+      <button type="submit" class="btn btn-primary">Enviar (POST)</button>
+    </div>
+  </form>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  async function carregarMongo() {
+    const lista = await MongoAPI.listar();
+    document.getElementById('tabela-mongo').innerHTML = lista.map(a => `
+      <tr>
+        <td style="font-family: monospace; color: gray;">${a.id_arquivo}</td>
+        <td style="font-weight: bold; color: blue; text-decoration: underline; cursor: pointer;" onclick="alert('Fazendo download do GridFS...')">${a.nome}</td>
+        <td>${a.tamanho}</td>
+        <td>${a.data}</td>
+        <td><button class="btn btn-danger" onclick="excluirArq('${a.id_arquivo}')">Excluir</button></td>
+      </tr>
+    `).join('');
+  }
+
+  async function salvarArquivo(e) {
+    e.preventDefault();
+    const input = document.getElementById('m-file');
+    if(input.files.length > 0) {
+      const file = input.files[0];
+      const tamanhoEmKB = (file.size / 1024).toFixed(2);
+      await MongoAPI.upload(file.name, tamanhoEmKB);
+      closeModal('modal-upload');
+      document.getElementById('form-upload').reset();
+      carregarMongo();
+    }
+  }
+
+  async function excluirArq(id) {
+    if(confirm('Excluir documento permanentemente do MongoDB?')) { 
+      await MongoAPI.excluir(id); 
+      carregarMongo(); 
+    }
+  }
+  carregarMongo();
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TunningStore — Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>⚡ Tunning</h1>
+  </div>
+  <nav>
+    <a href="dashboard.html" class="active">◈ Dashboard</a>
+    <a href="usuarios.html">👤 Usuários</a>
+    <a href="produtos.html">📦 Produtos</a>
+    <a href="categorias.html">🏷 Categorias</a>
+    <a href="redis.html">🗄 Monitor Redis</a>
+    <a href="mongo.html">📁 Arq. MongoDB</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="db-badge">PostgreSQL (Mocado)</div>
+    <div class="db-badge">MongoDB (Mocado)</div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h2>Dashboard</h2>
+      <div class="breadcrumb">/ inicio</div>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+      <div style="font-size:0.78rem; font-family: monospace;">
+        STATUS: <span id="api-status">verificando...</span>
+      </div>
+      <button class="btn btn-danger" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <div style="border: 2px solid #000; padding: 15px; background: #fff; flex: 1;">
+        <div style="font-size: 12px; font-weight: bold;">USUÁRIOS</div>
+        <div style="font-size: 24px;" id="count-usuarios">—</div>
+      </div>
+      <div style="border: 2px solid #000; padding: 15px; background: #fff; flex: 1;">
+        <div style="font-size: 12px; font-weight: bold;">PRODUTOS</div>
+        <div style="font-size: 24px;" id="count-produtos">—</div>
+      </div>
+      <div style="border: 2px solid #000; padding: 15px; background: #fff; flex: 1;">
+        <div style="font-size: 12px; font-weight: bold;">CATEGORIAS</div>
+        <div style="font-size: 24px;" id="count-categorias">—</div>
+      </div>
+    </div>
+
+    <div style="border: 2px solid #000; background: #fff; padding: 20px;">
+      <h3>Acesso Rápido</h3>
+      <div style="display: flex; gap: 5px; margin-top: 10px;">
+        <a href="usuarios.html" class="btn">Usuários</a>
+        <a href="produtos.html" class="btn">Produtos</a>
+        <a href="categorias.html" class="btn">Categorias</a>
+        <a href="redis.html" class="btn">Redis</a>
+        <a href="mongo.html" class="btn">Mongo DB</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="../js/api.js"></script>
+<script>
+  async function loadDashboard() {
+    document.getElementById('api-status').textContent = "🟢 LOCAL_MOCK";
+    try {
+      const [us, pr, cat] = await Promise.all([
+        Usuarios.listar(), Produtos.listar(), Categorias.listar()
+      ]);
+      document.getElementById('count-usuarios').textContent = us.length;
+      document.getElementById('count-produtos').textContent = pr.length;
+      document.getElementById('count-categorias').textContent = cat.length;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  loadDashboard();
+</script>
+</body>
+</html>

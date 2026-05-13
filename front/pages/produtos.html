@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TunningStore — Produtos</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      /* ── Modal de Imagem ── */
+      #modal-imagem {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(3px);
+        align-items: center;
+        justify-content: center;
+      }
+      #modal-imagem.open {
+        display: flex;
+      }
+
+      .img-modal-box {
+        background: #1e1e2e;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 28px 32px;
+        width: 460px;
+        max-width: 95vw;
+        color: #e0e0e0;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      }
+      .img-modal-box h3 {
+        margin: 0 0 20px;
+        font-size: 1.1rem;
+        color: #fff;
+      }
+
+      /* Imagem atual */
+      .img-current {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #111;
+        border: 1px solid #2a2a3a;
+        margin-bottom: 16px;
+        display: none;
+      }
+      .img-current.visible {
+        display: block;
+      }
+      .img-current img {
+        width: 100%;
+        max-height: 220px;
+        object-fit: contain;
+        display: block;
+      }
+      .img-current-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: 8px 10px;
+        border-top: 1px solid #2a2a3a;
+        gap: 8px;
+      }
+
+      /* Placeholder sem imagem */
+      .img-placeholder {
+        border: 2px dashed #333;
+        border-radius: 8px;
+        padding: 36px 20px;
+        text-align: center;
+        color: #555;
+        margin-bottom: 16px;
+        font-size: 0.85rem;
+      }
+      .img-placeholder span {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      /* Drop zone */
+      .drop-zone {
+        border: 2px dashed #444;
+        border-radius: 10px;
+        padding: 22px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+        position: relative;
+        margin-bottom: 18px;
+      }
+      .drop-zone:hover,
+      .drop-zone.dragover {
+        border-color: #7c6af7;
+        background: rgba(124, 106, 247, 0.07);
+      }
+      .drop-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .drop-zone .dz-icon {
+        font-size: 1.6rem;
+        margin-bottom: 4px;
+      }
+      .drop-zone p {
+        margin: 2px 0;
+        font-size: 0.8rem;
+        color: #777;
+      }
+      .drop-zone p strong {
+        color: #aaa;
+      }
+
+      /* Preview do arquivo selecionado */
+      .file-preview {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        background: #151520;
+        border: 1px solid #2a2a3a;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 18px;
+        font-size: 0.82rem;
+        color: #ccc;
+      }
+      .file-preview.visible {
+        display: flex;
+      }
+      .file-preview img {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid #333;
+        flex-shrink: 0;
+      }
+      .file-preview .fp-info {
+        flex: 1;
+        overflow: hidden;
+      }
+      .file-preview .fp-name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file-preview .fp-size {
+        color: #555;
+        font-size: 0.75rem;
+        margin-top: 2px;
+      }
+      .file-preview .fp-clear {
+        background: none;
+        border: none;
+        color: #555;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: color 0.15s;
+        flex-shrink: 0;
+        padding: 0;
+      }
+      .file-preview .fp-clear:hover {
+        color: #ef4444;
+      }
+
+      /* Progress bar */
+      .progress-wrap {
+        display: none;
+        margin-bottom: 16px;
+      }
+      .progress-wrap.visible {
+        display: block;
+      }
+      .progress-label {
+        font-size: 0.75rem;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      .progress-bar {
+        height: 5px;
+        background: #2a2a3a;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7c6af7, #a78bfa);
+        width: 0%;
+        transition: width 0.4s;
+        border-radius: 3px;
+      }
+
+      /* Actions */
+      .img-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 16px;
+        border-top: 1px solid #2a2a3a;
+      }
+
+      /* Badge na tabela */
+      .img-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(124, 106, 247, 0.15);
+        color: #a78bfa;
+        border: 1px solid rgba(124, 106, 247, 0.3);
+        border-radius: 999px;
+        padding: 2px 9px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+      .img-badge:hover {
+        background: rgba(124, 106, 247, 0.28);
+      }
+      .img-badge.zero {
+        background: transparent;
+        color: #555;
+        border-color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-brand"><h1>⚡ Tunning</h1></div>
+      <nav>
+        <a href="dashboard.html">◈ Dashboard</a>
+        <a href="usuarios.html">👤 Usuários</a>
+        <a href="produtos.html" class="active">📦 Produtos</a>
+        <a href="categorias.html">🏷 Categorias</a>
+        <a href="redis.html">🗄 Monitor Redis</a>
+        <a href="mongo.html">📁 Arq. MongoDB</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <h2>Lista de Produtos</h2>
+        <div style="display: flex; gap: 10px">
+          <button class="btn btn-primary" onclick="abrirNovo()">+ Novo</button>
+          <button class="btn btn-danger" onclick="fazerLogout()">Sair</button>
+        </div>
+      </div>
+      <div class="content">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Preço</th>
+              <th>Estoque</th>
+              <th>Categoria</th>
+              <th>Imagem</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-produtos"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- ── MODAL PRODUTO ── -->
+    <div class="modal" id="modal-produto">
+      <h3 id="modal-titulo">Produto</h3>
+      <form id="form-produto" onsubmit="salvar(event)">
+        <input type="hidden" id="p-id" />
+        <div class="form-group">
+          <label>Nome:</label>
+          <input type="text" id="p-nome" required />
+        </div>
+        <div class="form-group">
+          <label>Preço:</label>
+          <input type="number" step="0.01" min="0" id="p-preco" required />
+        </div>
+        <div class="form-group">
+          <label>Estoque:</label>
+          <input type="number" id="p-qtd" required />
+        </div>
+        <div class="form-group">
+          <label>Categoria:</label>
+          <select id="p-categoria" required>
+            <option value="">Selecione</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button
+            type="button"
+            class="btn"
+            onclick="closeModal('modal-produto')"
+          >
+            Sair
+          </button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── MODAL IMAGEM ── -->
+    <div id="modal-imagem">
+      <div class="img-modal-box">
+        <h3>🖼 Imagem — <span id="img-modal-nome"></span></h3>
+
+        <!-- Imagem já salva -->
+        <div class="img-current" id="img-current">
+          <img id="img-current-src" src="" alt="imagem do produto" />
+          <div class="img-current-actions">
+            <button class="btn btn-danger" onclick="deletarImagem()">
+              Remover
+            </button>
+          </div>
+        </div>
+
+        <!-- Placeholder quando não há imagem -->
+        <div class="img-placeholder" id="img-placeholder">
+          <span>🖼</span>
+          Nenhuma imagem cadastrada
+        </div>
+
+        <!-- Drop zone (oculto quando já há imagem) -->
+        <div class="drop-zone" id="drop-zone">
+          <input type="file" id="img-file-input" accept="image/*" />
+          <div class="dz-icon">📂</div>
+          <p><strong>Clique ou arraste</strong> uma imagem</p>
+          <p>PNG, JPG, WEBP</p>
+        </div>
+
+        <!-- Preview do arquivo selecionado -->
+        <div class="file-preview" id="file-preview">
+          <img id="fp-thumb" src="" alt="" />
+          <div class="fp-info">
+            <div class="fp-name" id="fp-name"></div>
+            <div class="fp-size" id="fp-size"></div>
+          </div>
+          <button class="fp-clear" onclick="limparSelecao()" title="Cancelar">
+            ✕
+          </button>
+        </div>
+
+        <!-- Progresso -->
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-label">Enviando…</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="img-modal-actions">
+          <button class="btn" onclick="fecharModalImagem()">Fechar</button>
+          <button
+            class="btn btn-primary"
+            id="btn-enviar"
+            onclick="enviarImagem()"
+            style="display: none"
+          >
+            ↑ Enviar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script>
+      // ── Estado ──
+      let imgProdutoId = null;
+      let imgAtualId = null;
+      let arquivoSelecionado = null;
+      let fpObjectUrl = null;
+
+      // ─────────────────────────────────────────────
+      // CARREGAR PRODUTOS
+      // ─────────────────────────────────────────────
+      async function carregar() {
+        try {
+          const lista = await Produtos.listar();
+          document.getElementById("tabela-produtos").innerHTML = lista
+            .map((p) => {
+              const imageId = p.mongo_image_ids
+                ? p.mongo_image_ids.split(",").filter(Boolean)[0]
+                : null;
+              return `
+              <tr>
+                <td>${p.id_produto}</td>
+                <td>${p.nome}</td>
+                <td>R$ ${Number(p.preco).toFixed(2)}</td>
+                <td>${p.estoque}</td>
+                <td>${p.categoria?.nome || "-"}</td>
+                <td>
+                  <span
+                    class="img-badge ${imageId ? "" : "zero"}"
+                    onclick='abrirImagem(${p.id_produto}, ${JSON.stringify(p.nome)}, ${JSON.stringify(imageId)})'
+                    title="Gerenciar imagem"
+                  >🖼 ${imageId ? "Ver" : "Adicionar"}</span>
+                </td>
+                <td>
+                  <button class="btn" onclick='abrirEdicao(${JSON.stringify(p)})'>Editar</button>
+                  <button class="btn btn-danger" onclick="excluir(${p.id_produto})">Excluir</button>
+                </td>
+              </tr>`;
+            })
+            .join("");
+        } catch (err) {
+          console.error(err);
+          showToast(err.message);
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // CARREGAR CATEGORIAS
+      // ─────────────────────────────────────────────
+      async function carregarCategorias() {
+        try {
+          const categorias = await Categorias.listar();
+          const select = document.getElementById("p-categoria");
+          select.innerHTML = `<option value="">Selecione</option>`;
+          categorias.forEach((c) => {
+            select.innerHTML += `<option value="${c.id_categoria}">${c.nome}</option>`;
+          });
+        } catch (err) {
+          console.error(err);
+          showToast(err.message);
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // NOVO / EDIÇÃO / SALVAR / EXCLUIR
+      // ─────────────────────────────────────────────
+      async function abrirNovo() {
+        document.getElementById("form-produto").reset();
+        document.getElementById("p-id").value = "";
+        document.getElementById("modal-titulo").textContent = "Novo Produto";
+        await carregarCategorias();
+        openModal("modal-produto");
+      }
+
+      async function abrirEdicao(produto) {
+        await carregarCategorias();
+        document.getElementById("p-id").value = produto.id_produto;
+        document.getElementById("p-nome").value = produto.nome;
+        document.getElementById("p-preco").value = produto.preco;
+        document.getElementById("p-qtd").value = produto.estoque;
+        document.getElementById("p-categoria").value = produto.id_categoria;
+        document.getElementById("modal-titulo").textContent = "Editar Produto";
+        openModal("modal-produto");
+      }
+
+      async function salvar(e) {
+        e.preventDefault();
+        try {
+          const id = document.getElementById("p-id").value;
+          const dados = {
+            nome: document.getElementById("p-nome").value,
+            preco: parseFloat(document.getElementById("p-preco").value),
+            estoque: parseInt(document.getElementById("p-qtd").value),
+            id_categoria: parseInt(
+              document.getElementById("p-categoria").value,
+            ),
+          };
+          if (id) {
+            await Produtos.editar(id, dados);
+            showToast("Produto atualizado");
+          } else {
+            await Produtos.criar(dados);
+            showToast("Produto criado");
+          }
+          closeModal("modal-produto");
+          carregar();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message);
+        }
+      }
+
+      async function excluir(id) {
+        if (!confirm("Apagar produto?")) return;
+        try {
+          await Produtos.excluir(id);
+          showToast("Produto removido");
+          carregar();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message);
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // MODAL DE IMAGEM — ABRIR / FECHAR
+      // ─────────────────────────────────────────────
+      function abrirImagem(produtoId, nome, imageId) {
+        imgProdutoId = produtoId;
+        imgAtualId = imageId || null;
+        arquivoSelecionado = null;
+        if (fpObjectUrl) {
+          URL.revokeObjectURL(fpObjectUrl);
+          fpObjectUrl = null;
+        }
+
+        document.getElementById("img-modal-nome").textContent = nome;
+        document.getElementById("img-file-input").value = "";
+        document.getElementById("btn-enviar").style.display = "none";
+        setProgress(false);
+        limparPreviewArquivo();
+        renderizarImagemAtual();
+
+        document.getElementById("modal-imagem").classList.add("open");
+      }
+
+      function fecharModalImagem() {
+        if (fpObjectUrl) {
+          URL.revokeObjectURL(fpObjectUrl);
+          fpObjectUrl = null;
+        }
+        document.getElementById("modal-imagem").classList.remove("open");
+        carregar();
+      }
+
+      document
+        .getElementById("modal-imagem")
+        .addEventListener("click", function (e) {
+          if (e.target === this) fecharModalImagem();
+        });
+
+      // ─────────────────────────────────────────────
+      // RENDERIZAR ESTADO DA IMAGEM
+      // ─────────────────────────────────────────────
+      function renderizarImagemAtual() {
+        const elCurrent = document.getElementById("img-current");
+        const elPlaceholder = document.getElementById("img-placeholder");
+        const elDrop = document.getElementById("drop-zone");
+
+        if (imgAtualId) {
+          document.getElementById("img-current-src").src = Imagem.buscar(
+            imgProdutoId,
+            imgAtualId,
+          );
+          elCurrent.classList.add("visible");
+          elPlaceholder.style.display = "none";
+          elDrop.style.display = "none";
+        } else {
+          elCurrent.classList.remove("visible");
+          elPlaceholder.style.display = "block";
+          elDrop.style.display = "block";
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // DROP ZONE
+      // ─────────────────────────────────────────────
+      const dropZone = document.getElementById("drop-zone");
+      const fileInput = document.getElementById("img-file-input");
+
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files[0]) selecionarArquivo(e.target.files[0]);
+      });
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+      });
+      dropZone.addEventListener("dragleave", () =>
+        dropZone.classList.remove("dragover"),
+      );
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) selecionarArquivo(file);
+      });
+
+      function selecionarArquivo(file) {
+        if (fpObjectUrl) URL.revokeObjectURL(fpObjectUrl);
+        arquivoSelecionado = file;
+        fpObjectUrl = URL.createObjectURL(file);
+
+        document.getElementById("fp-thumb").src = fpObjectUrl;
+        document.getElementById("fp-name").textContent = file.name;
+        document.getElementById("fp-size").textContent = formatBytes(file.size);
+        document.getElementById("file-preview").classList.add("visible");
+        document.getElementById("btn-enviar").style.display = "inline-flex";
+        fileInput.value = "";
+      }
+
+      function limparSelecao() {
+        if (fpObjectUrl) {
+          URL.revokeObjectURL(fpObjectUrl);
+          fpObjectUrl = null;
+        }
+        arquivoSelecionado = null;
+        limparPreviewArquivo();
+      }
+
+      function limparPreviewArquivo() {
+        document.getElementById("file-preview").classList.remove("visible");
+        document.getElementById("btn-enviar").style.display = "none";
+      }
+
+      function formatBytes(b) {
+        if (b < 1024) return b + " B";
+        if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+        return (b / 1048576).toFixed(1) + " MB";
+      }
+
+      // ─────────────────────────────────────────────
+      // ENVIAR IMAGEM
+      // ─────────────────────────────────────────────
+      async function enviarImagem() {
+        if (!arquivoSelecionado) return;
+        const btn = document.getElementById("btn-enviar");
+        btn.disabled = true;
+        setProgress(true);
+        try {
+          const produto = await Imagem.upload(imgProdutoId, arquivoSelecionado);
+          imgAtualId = produto.mongo_image_ids
+            ? produto.mongo_image_ids.split(",").filter(Boolean)[0]
+            : null;
+          limparSelecao();
+          renderizarImagemAtual();
+          showToast("Imagem enviada");
+        } catch (err) {
+          console.error(err);
+          showToast(err.message);
+        } finally {
+          btn.disabled = false;
+          setProgress(false);
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // DELETAR IMAGEM
+      // ─────────────────────────────────────────────
+      async function deletarImagem() {
+        if (!imgAtualId || !confirm("Remover imagem do produto?")) return;
+        try {
+          await Imagem.deletar(imgProdutoId, imgAtualId);
+          imgAtualId = null;
+          renderizarImagemAtual();
+          showToast("Imagem removida");
+        } catch (err) {
+          console.error(err);
+          showToast(err.message);
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // PROGRESS (indeterminado)
+      // ─────────────────────────────────────────────
+      let _progressInterval = null;
+      function setProgress(visible) {
+        const wrap = document.getElementById("progress-wrap");
+        const fill = document.getElementById("progress-fill");
+        clearInterval(_progressInterval);
+        wrap.classList.toggle("visible", visible);
+        if (visible) {
+          let pct = 0;
+          fill.style.width = "0%";
+          _progressInterval = setInterval(() => {
+            pct = Math.min(pct + 7, 85);
+            fill.style.width = pct + "%";
+          }, 200);
+        } else {
+          fill.style.width = "0%";
+        }
+      }
+
+      // ─────────────────────────────────────────────
+      // INIT
+      // ─────────────────────────────────────────────
+      carregar();
+    </script>
+  </body>
+</html>

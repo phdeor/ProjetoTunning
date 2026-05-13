@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>TunningStore — Categorias</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand"><h1>⚡ Tunning</h1></div>
+  <nav>
+    <a href="dashboard.html">◈ Dashboard</a>
+    <a href="usuarios.html">👤 Usuários</a>
+    <a href="produtos.html">📦 Produtos</a>
+    <a href="categorias.html" class="active">🏷 Categorias</a>
+    <a href="redis.html">🗄 Monitor Redis</a>
+    <a href="mongo.html">📁 Arq. MongoDB</a>
+  </nav>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Categorias</h2>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-primary" onclick="abrirNovo()">+ Nova</button>
+      <button class="btn btn-danger" onclick="fazerLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Nome</th><th>Descrição</th><th>Ações</th></tr>
+      </thead>
+      <tbody id="tabela-categorias"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal" id="modal-cat">
+  <h3 id="modal-titulo">Categoria</h3>
+  <form id="form-cat" onsubmit="salvar(event)">
+    <input type="hidden" id="c-id" />
+    <div class="form-group"><label>Nome:</label><input type="text" id="c-nome" required/></div>
+    <div class="form-group"><label>Desc:</label><input type="text" id="c-desc"/></div>
+    <div class="form-actions">
+      <button type="button" class="btn" onclick="closeModal('modal-cat')">Voltar</button>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
+  </form>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+  async function carregar() {
+    const lista = await Categorias.listar();
+    document.getElementById('tabela-categorias').innerHTML = lista.map(c => `
+      <tr>
+        <td>${c.id_categoria}</td><td>${c.nome}</td><td>${c.descricao || '-'}</td>
+        <td>
+          <button class="btn" onclick="abrirEdicao(${c.id_categoria}, '${c.nome}', '${c.descricao}')">Editar</button>
+          <button class="btn btn-danger" onclick="excluir(${c.id_categoria})">Excluir</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function abrirNovo() {
+    document.getElementById('form-cat').reset();
+    document.getElementById('c-id').value = '';
+    document.getElementById('modal-titulo').textContent = 'Nova Categoria';
+    openModal('modal-cat');
+  }
+
+  function abrirEdicao(id, nome, desc) {
+    document.getElementById('c-id').value = id;
+    document.getElementById('c-nome').value = nome;
+    document.getElementById('c-desc').value = desc !== 'undefined' ? desc : '';
+    document.getElementById('modal-titulo').textContent = 'Editar Categoria';
+    openModal('modal-cat');
+  }
+
+  async function salvar(e) {
+    e.preventDefault();
+    const id = document.getElementById('c-id').value;
+    const dados = { nome: document.getElementById('c-nome').value, descricao: document.getElementById('c-desc').value };
+    if(id) await Categorias.editar(id, dados);
+    else await Categorias.criar(dados);
+    closeModal('modal-cat');
+    carregar();
+  }
+
+  async function excluir(id) {
+    if(confirm('Apagar?')) { await Categorias.excluir(id); carregar(); }
+  }
+  carregar();
+</script>
+</body>
+</html>

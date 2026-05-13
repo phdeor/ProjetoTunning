@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sistema Tunning - Login</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body style="display: block; background-color: #008080">
+    <div class="login-box">
+      <h2>Login TunningStore</h2>
+      <form id="form-login" onsubmit="fazerLogin(event)">
+        <div class="form-group" style="text-align: left">
+          <label>Usuário:</label>
+          <input
+            type="text"
+            id="login-user"
+            required
+            placeholder="Ex: admfei"
+          />
+        </div>
+        <div class="form-group" style="text-align: left">
+          <label>Senha:</label>
+          <input type="password" id="login-pass" required placeholder="1234" />
+        </div>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          style="width: 100%; padding: 10px"
+        >
+          Entrar
+        </button>
+        <hr style="margin: 15px 0" />
+        <button
+          type="button"
+          class="btn"
+          style="width: 100%"
+          onclick="window.location.href = 'cadastro.html'"
+        >
+          Cadastrar-se
+        </button>
+      </form>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+      async function fazerLogin(e) {
+        e.preventDefault();
+        const u = document.getElementById("login-user").value;
+        const p = document.getElementById("login-pass").value;
+        const sucesso = await realizarLoginAPI(u, p);
+        if (sucesso) {
+          const role = localStorage.getItem("userRole");
+          if (role === "admin") {
+            window.location.href = "pages/dashboard.html";
+          } else {
+            window.location.href = "pages/loja.html";
+          }
+        } else {
+          alert("E-mail ou senha inválidos.");
+        }
+      }
+    </script>
+  </body>
+</html>
